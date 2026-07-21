@@ -7,7 +7,7 @@ import (
 )
 
 // CredentialsProvider is the SDI port for S3 credentials (static, Vault, STS, …).
-// Catalog: declare a concrete implementor (e.g. *CredentialsStatic) and bind Client[C] to that type.
+// Catalog: declare a concrete implementor (e.g. *CredentialsStatic[Default]) and bind Client[C] to that type.
 type CredentialsProvider interface {
 	Retrieve(ctx context.Context) (aws.Credentials, error)
 }

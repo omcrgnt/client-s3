@@ -6,7 +6,7 @@ import (
 )
 
 func TestPresignRequiresPositiveTTL(t *testing.T) {
-	c := &Client[*CredentialsStatic]{bucket: "b"}
+	c := &Client[*CredentialsStatic[Default]]{bucket: "b"}
 	_, err := c.PresignGet(context.Background(), "k", 0)
 	if err == nil {
 		t.Fatal("expected error")
@@ -14,7 +14,7 @@ func TestPresignRequiresPositiveTTL(t *testing.T) {
 }
 
 func TestCleanKeyRequired(t *testing.T) {
-	c := &Client[*CredentialsStatic]{bucket: "b"}
+	c := &Client[*CredentialsStatic[Default]]{bucket: "b"}
 	err := c.Put(context.Background(), "", nil, PutOptions{})
 	if err == nil {
 		t.Fatal("expected key error")

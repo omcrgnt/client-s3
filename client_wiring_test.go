@@ -10,7 +10,7 @@ import (
 )
 
 func TestClientBuildDepsInject(t *testing.T) {
-	cfg := &clients3.Config[*clients3.CredentialsStatic]{
+	cfg := &clients3.Config[*clients3.CredentialsStatic[clients3.Default]]{
 		Bucket:   "bemvpgame-assets",
 		Endpoint: httpv1.URL{Value: "http://127.0.0.1:9000"},
 		Region:   "us-east-1",
@@ -19,22 +19,22 @@ func TestClientBuildDepsInject(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	c := got.(*clients3.Client[*clients3.CredentialsStatic])
+	c := got.(*clients3.Client[*clients3.CredentialsStatic[clients3.Default]])
 	if c.Bucket() != "bemvpgame-assets" {
 		t.Fatalf("bucket: %q", c.Bucket())
 	}
 
-	built, err := (&clients3.CredentialsStaticConfig{
+	built, err := (&clients3.CredentialsStaticConfig[clients3.Default]{
 		AccessKey: "minioadmin",
 		SecretKey: "minioadmin",
 	}).Build()
 	if err != nil {
 		t.Fatal(err)
 	}
-	creds := built.(*clients3.CredentialsStatic)
+	creds := built.(*clients3.CredentialsStatic[clients3.Default])
 
 	deps := c.Deps()
-	if got, want := reflect.TypeOf(deps[0]), reflect.TypeOf((*clients3.CredentialsStatic)(nil)); got != want {
+	if got, want := reflect.TypeOf(deps[0]), reflect.TypeOf((*clients3.CredentialsStatic[clients3.Default])(nil)); got != want {
 		t.Fatalf("Deps()[0] type = %v, want %v", got, want)
 	}
 

@@ -1,3 +1,6 @@
+// Two S3 clients share one static credentials resource (same Tag / one env block).
+//
+// Env prefix: CLIENT_S3_SHARED_CREDS
 package main
 
 import (
@@ -8,13 +11,14 @@ import (
 	"github.com/omcrgnt/res/unique"
 )
 
-const envPrefix = "CLIENT_S3_EXAMPLE"
+const envPrefix = "CLIENT_S3_SHARED_CREDS"
 
 type static = clients3.CredentialsStatic[clients3.Default]
 
 type catalog struct {
-	S3     *clients3.Client[*static] `ecfg:"S3"`
-	S3Cred *static                   `ecfg:"S3_CREDENTIALS_STATIC"`
+	Assets  *clients3.Client[*static] `ecfg:"S3_ASSETS"`
+	Backups *clients3.Client[*static] `ecfg:"S3_BACKUPS"`
+	Cred    *static                   `ecfg:"S3_CREDENTIALS_STATIC"`
 }
 
 func main() {

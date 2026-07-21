@@ -4,21 +4,32 @@ S3-compatible object storage client for omcrgnt apps (AWS S3 / MinIO): ecfg cata
 AWS SDK Go v2 under the hood, OpenTelemetry traces via `otelaws` + smithy adapters.
 
 One client instance binds to **one bucket**. Credentials are a separate SDI port
-([CredentialsProvider](credentials.go)), wired like `srv-http.Server[T]` / `logger.Output`.
+([CredentialsProvider](credentials.go)), wired like `srv-http.Server[T]`.
 
 ## Catalog
 
 ```go
 import clients3 "github.com/omcrgnt/client-s3"
 
+type static = clients3.CredentialsStatic[clients3.Default]
+
 type catalog struct {
-	S3     *clients3.Client[*clients3.CredentialsStatic] `ecfg:"S3"`
-	S3Cred *clients3.CredentialsStatic                   `ecfg:"S3_CREDENTIALS_STATIC"`
+	S3     *clients3.Client[*static] `ecfg:"S3"`
+	S3Cred *static                   `ecfg:"S3_CREDENTIALS_STATIC"`
 }
 ```
 
-`Client[C]` depends on concrete credentials type `C` (SDI `Deps` / `Inject`).
-Multiple clients with separate credential sets — later (distinct `C` / tags).
+`Client[C]` depends on concrete credentials type `C`.  
+`CredentialsStatic[Tag]` — Tag is a phantom type for SDI when you need more than one static set.
+A local alias (`type static = …`) keeps the catalog readable.
+
+## Examples
+
+| Path | Case |
+|------|------|
+| [`example/app`](example/app) | One client + one `CredentialsStatic[Default]` |
+| [`example/shared-creds`](example/shared-creds) | Two clients, **one** shared credentials slot |
+| [`example/two-creds`](example/two-creds) | Two clients, **two** credentials slots (distinct Tags) |
 
 ## Environment
 
@@ -74,4 +85,4 @@ CLIENT_S3_EXAMPLE_S3_CREDENTIALS_STATIC_ACCESS_KEY=minioadmin
 CLIENT_S3_EXAMPLE_S3_CREDENTIALS_STATIC_SECRET_KEY=minioadmin
 ```
 
-See `example/app` for a minimal `app.Run` catalog.
+See examples above for shared vs split credentials layouts.

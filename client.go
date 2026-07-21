@@ -16,7 +16,8 @@ import (
 )
 
 // Client is an S3-compatible object client bound to one bucket and credentials type C.
-// Catalog field: *Client[C] (Configurable); C is a concrete [CredentialsProvider] (e.g. *CredentialsStatic).
+// Catalog field: *Client[C] (Configurable); C is a concrete [CredentialsProvider]
+// (e.g. *CredentialsStatic[Default]).
 // SDI wires C via Deps/Inject (same pattern as srv-http.Server[T]).
 type Client[C CredentialsProvider] struct {
 	s3        *s3.Client
@@ -28,7 +29,7 @@ type Client[C CredentialsProvider] struct {
 	pathStyle bool
 }
 
-var _ app.Configurable = (*Client[*CredentialsStatic])(nil)
+var _ app.Configurable = (*Client[*CredentialsStatic[Default]])(nil)
 
 // BuildConfig returns the config spec for materialize.
 func (*Client[C]) BuildConfig() (app.Materializer, error) {

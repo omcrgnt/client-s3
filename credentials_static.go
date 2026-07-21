@@ -37,40 +37,46 @@ func (s SecretKey) Validate() error {
 
 func (s SecretKey) String() string { return strings.TrimSpace(string(s)) }
 
+// Default tags the single static credentials set in a process (most apps).
+// Also used when several clients share one credentials resource.
+type Default struct{}
+
 // CredentialsStaticConfig is the ecfg spec for [CredentialsStatic].
-type CredentialsStaticConfig struct {
+type CredentialsStaticConfig[Tag any] struct {
 	AccessKey AccessKey
 	SecretKey SecretKey
 }
 
 // Build returns a [CredentialsStatic] resource.
-func (c *CredentialsStaticConfig) Build() (any, error) {
-	return &CredentialsStatic{
+func (c *CredentialsStaticConfig[Tag]) Build() (any, error) {
+	return &CredentialsStatic[Tag]{
 		accessKey: c.AccessKey.String(),
 		secretKey: c.SecretKey.String(),
 	}, nil
 }
 
 // CredentialsStatic is long-lived access/secret credentials (MinIO / IAM user keys).
-// Catalog field: *CredentialsStatic (Configurable). Wire with Client[*CredentialsStatic].
-type CredentialsStatic struct {
+// Tag distinguishes multiple static sets in one process for SDI.
+// One set: CredentialsStatic[Default]. Two sets: CredentialsStatic[assets], CredentialsStatic[backups], …
+// Catalog: *CredentialsStatic[Tag]; wire Client[*CredentialsStatic[Tag]].
+type CredentialsStatic[Tag any] struct {
 	accessKey string
 	secretKey string
 }
 
 var (
-	_ app.Configurable        = (*CredentialsStatic)(nil)
-	_ CredentialsProvider     = (*CredentialsStatic)(nil)
-	_ aws.CredentialsProvider = (*CredentialsStatic)(nil)
+	_ app.Configurable        = (*CredentialsStatic[Default])(nil)
+	_ CredentialsProvider     = (*CredentialsStatic[Default])(nil)
+	_ aws.CredentialsProvider = (*CredentialsStatic[Default])(nil)
 )
 
 // BuildConfig returns the config spec for materialize.
-func (*CredentialsStatic) BuildConfig() (app.Materializer, error) {
-	return &CredentialsStaticConfig{}, nil
+func (*CredentialsStatic[Tag]) BuildConfig() (app.Materializer, error) {
+	return &CredentialsStaticConfig[Tag]{}, nil
 }
 
 // Retrieve implements [aws.CredentialsProvider] / [CredentialsProvider].
-func (c *CredentialsStatic) Retrieve(_ context.Context) (aws.Credentials, error) {
+func (c *CredentialsStatic[Tag]) Retrieve(_ context.Context) (aws.Credentials, error) {
 	if c == nil {
 		return aws.Credentials{}, fmt.Errorf("clients3: credentials static is nil")
 	}
