@@ -61,7 +61,8 @@ Prefix comes from the app (`EnvPrefix`); fields below are relative to each slot.
 | `Head` | Metadata only |
 | `Delete` | Remove object |
 | `PresignGet` | Time-limited GET URL |
-| `Ready` | `HeadBucket` readiness probe |
+| `Ready` | `HeadBucket` reachability check |
+| `ProbeReady` | Ops readiness (`ProbeReadiness`); delegates to `Ready` |
 
 `ErrNotFound` / `IsNotFound` map missing-object errors.
 
