@@ -4,8 +4,19 @@ version: 3
 
 vars:
   DOCKER_IMAGE: golang:alpine
+  COMPOSE_FILE: docker/service/minio.yml
 
 tasks:
+  deps:up:
+    desc: Start MinIO (+ init bucket) via docker/service/minio.yml
+    cmds:
+      - docker compose -f {{.COMPOSE_FILE}} up -d
+
+  deps:down:
+    desc: Stop MinIO compose fragment
+    cmds:
+      - docker compose -f {{.COMPOSE_FILE}} down
+
   test-u:
     desc: Unit tests (race)
     cmds:
