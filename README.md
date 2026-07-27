@@ -73,14 +73,50 @@ SDK client is created in `Inject` after SDI resolves credentials (not in `Build`
 On `Inject`, the package attaches OpenTelemetry middleware so S3 calls emit spans to the process
 `TracerProvider` (set by `omcrgnt/telemetry` before `runner.Run`).
 
-## MinIO (local)
+## Docker (MinIO)
+
+Fragment for local app / system tests: [`docker/service/minio.yml`](docker/service/minio.yml)
+(`minio` + `minio-init` bucket create).
+
+```bash
+docker compose -f docker/service/minio.yml up -d
+# or: task deps:up
+```
+
+| Env | Default |
+|-----|---------|
+| `MINIO_ROOT_USER` / `MINIO_ROOT_PASSWORD` | `minioadmin` |
+| `MINIO_API_PORT` / `MINIO_CONSOLE_PORT` | `9000` / `9001` |
+| `MINIO_BUCKET` | `assets` |
+
+App compose via git `include` (`#main`):
+
+```yaml
+include:
+  - path: https://github.com/omcrgnt/client-s3.git#main:docker/service/minio.yml
+```
+
+Or `extends` (rename / override ports):
+
+```yaml
+services:
+  minio:
+    extends:
+      file: path/to/client-s3/docker/service/minio.yml
+      service: minio
+    ports:
+      - "9100:9000"
+      - "9101:9001"
+```
+
+Catalog env for the Go client stays on the app side, for example:
 
 ```bash
 # example env (app prefix CLIENT_S3_EXAMPLE)
 CLIENT_S3_EXAMPLE_S3_LABEL=assets
 CLIENT_S3_EXAMPLE_S3_ENDPOINT=http://127.0.0.1:9000
 CLIENT_S3_EXAMPLE_S3_REGION=us-east-1
-CLIENT_S3_EXAMPLE_S3_BUCKET=bemvpgame-assets
+CLIENT_S3_EXAMPLE_S3_BUCKET=assets
 
 CLIENT_S3_EXAMPLE_S3_CREDENTIALS_STATIC_ACCESS_KEY=minioadmin
 CLIENT_S3_EXAMPLE_S3_CREDENTIALS_STATIC_SECRET_KEY=minioadmin
